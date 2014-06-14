@@ -1,0 +1,15 @@
+Package: revealedPrefs
+Type: Package
+Title: Revealed preferences and microeconomic rationality
+Version: 0.1
+Date: 2014-06-14
+Author: Julien Boelaert <jubo.stats@gmail.com>
+Maintainer: Julien Boelaert <jubo.stats@gmail.com>
+Description: Computation of (direct and indirect) revealed preferences, fast non-parametric tests of rationality axioms (WARP, SARP, GARP) and detection of axiom-consistent subpopulations.
+License: GPL (>= 2)
+Depends: Rcpp
+LinkingTo: Rcpp, RcppArmadillo
+Packaged: 2014-06-23 19:17:16 UTC; bart
+NeedsCompilation: yes
+Repository: CRAN
+Date/Publication: 2014-06-24 01:27:31
