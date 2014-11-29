@@ -7,6 +7,10 @@ export(cpUpper)
 export(cpLower)
 export(directPrefs)
 export(indirectPrefs)
+export(simPrefs)
+export(simGarp)
+export(simSarp)
+export(simWarp)
 
 useDynLib(revealedPrefs)
 

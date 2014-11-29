@@ -3,6 +3,26 @@
 /////////  Strong Axiom of Revealed Preferences (SARP) functions  //////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
+/*  
+Copyright 2014 Julien Boelaert.
+
+This file is part of revealedPrefs.
+
+revealedPrefs is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+revealedPrefs is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with revealedPrefs.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <RcppArmadillo.h>
 #include <vector>
 using namespace Rcpp;
@@ -11,23 +31,27 @@ using namespace Rcpp;
 // Auxiliary functions
 
 // Slack Revealed Prefs from matrices x and p, for obs i and k
-// return true if p_i x_i >= p_i x_k,
-// return false if p_i x_i < p_i x_k,
-bool SlackRevPref(arma::mat *x, arma::mat *p, unsigned obs_i, unsigned obs_k) {
-  if (arma::dot(p[0].row(obs_i), x[0].row(obs_i)) -
-    arma::dot(p[0].row(obs_i), x[0].row(obs_k)) >= 0) 
+// afriat_par in (0,1), 1 for standard RP
+// return true if afriat_par * p_i x_i >= p_i x_k,
+// return false if afriat_par * p_i x_i < p_i x_k,
+
+bool SlackRevPref(arma::mat *x, arma::mat *p, unsigned obs_i, unsigned obs_k, 
+                  double afriat_par) {
+  if (afriat_par * arma::dot(p[0].row(obs_i), x[0].row(obs_i)) -
+        arma::dot(p[0].row(obs_i), x[0].row(obs_k)) >= 0) 
     return true;
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // check SARP with a variant of the Floyd-Warshall algorithm
-RcppExport SEXP CheckSarp(SEXP x, SEXP p) { try {
+RcppExport SEXP CheckSarp(SEXP x, SEXP p, SEXP afriat) { try {
   // import quantities and prices matrices (x, p)
   NumericMatrix r_x(x), r_p(p);
   unsigned n_obs= r_x.nrow();
   arma::mat mat_x(r_x.begin(), r_x.nrow(), r_x.ncol());
   arma::mat mat_p(r_p.begin(), r_p.nrow(), r_p.ncol());
+  double afriat_par= as<double>(afriat);
   
   // Compute direct revealed preferences from matrix p*x
   // exit as soon as contradiction between direct preferences
@@ -36,13 +60,13 @@ RcppExport SEXP CheckSarp(SEXP x, SEXP p) { try {
   for (unsigned i_row= 0; i_row < n_obs; i_row++) {
     for (unsigned i_col= i_row; i_col < n_obs; i_col++) {
       // i_row prefered to i_col?
-      if (arma::dot(mat_p.row(i_row), mat_x.row(i_row)) >=
-              arma::dot(mat_p.row(i_row), mat_x.row(i_col)))
+      if (afriat_par * arma::dot(mat_p.row(i_row), mat_x.row(i_row)) >=
+            arma::dot(mat_p.row(i_row), mat_x.row(i_col)))
         direct_prefs(i_row, i_col)= 1;
 
       // i_col prefered to i_row?
-      if (arma::dot(mat_p.row(i_col), mat_x.row(i_col)) >=
-              arma::dot(mat_p.row(i_col), mat_x.row(i_row)))
+      if (afriat_par * arma::dot(mat_p.row(i_col), mat_x.row(i_col)) >=
+            arma::dot(mat_p.row(i_col), mat_x.row(i_row)))
         direct_prefs(i_col, i_row)= 1;
       
       // SARP violation in direct preferences? (ie. WARP violation)
@@ -102,12 +126,14 @@ RcppExport SEXP CheckSarp(SEXP x, SEXP p) { try {
 // returns empty vector if no violation found
 // returns vector of violating path if violation found
 // (used by DeepSarp)
-std::vector<unsigned> RecSarp(unsigned cur_obs, std::vector<bool> * tabu, unsigned *n_tabu,
-                         std::vector<unsigned> ascendence, 
-                         arma::mat *x, arma::mat *p) {
+std::vector<unsigned> RecSarp(unsigned cur_obs, std::vector<bool> * tabu, 
+                              unsigned *n_tabu,
+                              std::vector<unsigned> ascendence, 
+                              arma::mat *x, arma::mat *p, 
+                              double afriat_par) {
   for (unsigned i_search= 0; i_search < x[0].n_rows; i_search++) {
     if (!tabu[0][i_search] && i_search!=cur_obs) {
-      if (SlackRevPref(x, p, cur_obs, i_search)) {
+      if (SlackRevPref(x, p, cur_obs, i_search, afriat_par)) {
         // if cur_obs prefered to i_search, check if i_search is in ascendence
         bool b_asc= false;
         unsigned i_asc;
@@ -133,15 +159,15 @@ std::vector<unsigned> RecSarp(unsigned cur_obs, std::vector<bool> * tabu, unsign
             ascendence.push_back(cur_obs);
             ascendence.push_back(i_search);
             return(ascendence);
-          }
-          // (no action if cur_obs == all others since i_asc)
+          } 
+          // if cycle of equal quantities, no action
         } else {
           // if not in ascendence, pursue depth-first search
           std::vector<unsigned> new_asc= ascendence;
           new_asc.push_back(cur_obs);
           
           std::vector<unsigned> pursue= RecSarp(i_search, tabu, n_tabu,
-                                           new_asc, x, p);
+                                           new_asc, x, p, afriat_par);
           if (pursue.size())
             return pursue; // if violation in descendence, return violation
         }
@@ -149,7 +175,7 @@ std::vector<unsigned> RecSarp(unsigned cur_obs, std::vector<bool> * tabu, unsign
     }
   }
   
-  // once all the available choices have been tried, tabu the current obs
+  // once all the available choices have been tried tabu the current observation
   tabu[0][cur_obs]= true;
   (*n_tabu)++;
   return std::vector<unsigned>(0);
@@ -157,12 +183,13 @@ std::vector<unsigned> RecSarp(unsigned cur_obs, std::vector<bool> * tabu, unsign
 
 ////////////////////////////////////////////////////////////////////////////////
 // Check SARP using depth-first search with tabu list
-RcppExport SEXP DeepSarp(SEXP quanti, SEXP prices) { try {
+RcppExport SEXP DeepSarp(SEXP quanti, SEXP prices, SEXP afriat) { try {
   // import arguments
   NumericMatrix r_quanti(quanti), r_prices(prices);
   unsigned n_obs= r_quanti.nrow();
   arma::mat mat_q(r_quanti.begin(), r_quanti.nrow(), r_quanti.ncol());
   arma::mat mat_p(r_prices.begin(), r_prices.nrow(), r_prices.ncol());
+  double afriat_par= as<double>(afriat);
   
   // tabu list to be passed to the recursive search
   std::vector<bool> tabu(n_obs, false);
@@ -175,7 +202,7 @@ RcppExport SEXP DeepSarp(SEXP quanti, SEXP prices) { try {
       // launch recursive search with a non-tabu observation
       df_search= RecSarp(current_obs, &tabu, &n_tabu,
                          std::vector<unsigned>(0), 
-                         &mat_q, &mat_p);
+                         &mat_q, &mat_p, afriat_par);
       if (df_search.size())
         found_violation= true;
     }

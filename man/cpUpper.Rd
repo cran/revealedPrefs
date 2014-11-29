@@ -10,25 +10,27 @@ Upper bound on the number of GARP-consistent subpopulations and clustering.
 The \code{cpUpper} function computes a Crawford-Pendakur type upper bound on the number of GARP-consistent subpopulations, and performs clustering of the data.
 }
 \usage{
-cpUpper(x, p, times= 1, method= c("fastfloyd", "deep", "floyd"))
+cpUpper(x, p, times= 1, afriat.par= 1, method= c("fastfloyd", "deep", "floyd"))
 \method{print}{upperBound}(x, ...)
 \method{summary}{upperBound}(object, ...)
 }
 \arguments{
   \item{x}{data frame or matrix containing the observed quantities, where each row corresponds to an observation and the columns are types of goods, or an object of class \code{upperBound} to be used with \code{print},}
   \item{p}{data frame or matrix (of same dimensions as x) containing the corresponding prices,}
-  \item{times}{number of times the algorithm is run (the final result is the best of \code{times} results,  ie. lowest number of clusters found),}
-  \item{method}{character string: \code{"fastfloyd"} or \code{"deep"} or \code{"floyd"} (see Details section). Default \code{"fastfloyd"}. }
+  \item{times}{number of times the algorithm is run (the final result is the best of \code{times} results, ie. lowest number of clusters found), default is 1,}
+  \item{afriat.par}{the Afriat parameter, a real number in [0,1], which allows a certain level of error in the optimization of choices ; default is 1, ie. no optimization error allowed,}
+  \item{method}{character string: \code{"fastfloyd"} or \code{"deep"} or \code{"floyd"} (see Details). Default \code{"fastfloyd"}. }
   \item{object}{an object of class \code{upperBound} as returned by \code{cpUpper},}
   \item{...}{additional arguments passed to the \code{print} and 
   \code{summary} methods (unused).}
 }
 \value{
 \code{cpUpper} returns an object of class \code{upperBound} which contains the following elements:
-  \item{\code{n.types}}{upper bound on the number of types,}
   \item{\code{clustering}}{numeric vector with length equal to number of observations, containing the cluster number of each observation,}
   \item{\code{cluster.pop}}{numeric vector containg the numbers of observations allocated to each cluster,}
   \item{\code{hist.n.types}}{numeric vector containing the history of numbers of clusters found during multiple runs of the algorithm.}
+  \item{\code{n.types}}{upper bound on the number of types,}
+  \item{\code{afriat.par}}{Afriat parameter used in the algorithm.}
 }
 \details{
 For each run of the algorithm, a random permutation of the observations is drawn, and one by one each observation is associated with the biggest cluster that can include it while preserving consistency with the GARP rationality axiom. If no cluster is compatible with a given observation a new cluster is created to accomodate it.

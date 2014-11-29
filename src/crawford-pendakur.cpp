@@ -3,6 +3,26 @@
 ///////////////////////  Crawford-Pendakur functions ///////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
+/*  
+Copyright 2014 Julien Boelaert.
+
+This file is part of revealedPrefs.
+
+revealedPrefs is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+revealedPrefs is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with revealedPrefs.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <RcppArmadillo.h>
 #include <vector>
 using namespace Rcpp;
@@ -12,24 +32,27 @@ using namespace Rcpp;
 
 // Recursive depth-first GARP 
 // (used by DeepCpUp, defined in garp.cpp)
-std::vector<unsigned> RecGarp(unsigned cur_obs, std::vector<bool> * tabu, 
-                              unsigned *n_tabu,
+std::vector<unsigned> RecGarp(unsigned cur_obs, std::vector<bool> *tabu, 
+                              unsigned *n_tabu, 
+                              std::vector<unsigned> *hist_tabu,
                               std::vector<unsigned> ascendence, 
                               std::vector<bool> strict_asc, 
-                              arma::mat *x, arma::mat *p);
+                              arma::mat *x, arma::mat *p, 
+                              double afriat_par);
                          
 // boolean check GARP from an arma::mat argument 
 // (used by CpUp, defined in garp.cpp)
-bool ViolateGarp(arma::mat mat_px);
+bool ViolateGarp(arma::mat mat_px, double afriat_par);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Crawford-Pendakur lower bound
-RcppExport SEXP CpLow(SEXP x, SEXP p, SEXP samples) { try {
+RcppExport SEXP CpLow(SEXP x, SEXP p, SEXP samples, SEXP afriat) { try {
   // import quantities and prices matrices (x, p)
   NumericMatrix r_x(x), r_p(p);
   unsigned n_obs= r_x.nrow();
   arma::mat mat_x(r_x.begin(), r_x.nrow(), r_x.ncol());
   arma::mat mat_p(r_p.begin(), r_p.nrow(), r_p.ncol());
+  double afriat_par= as<double>(afriat);
   
   // import samples matrix
   NumericMatrix r_samp(samples);
@@ -49,15 +72,15 @@ RcppExport SEXP CpLow(SEXP x, SEXP p, SEXP samples) { try {
       for (unsigned i_winner= 0; i_winner < winners.size(); i_winner++) {
         the_winner= winners[i_winner]; // index of current winner
 
-        if (arma::dot(mat_p.row(the_obs), mat_x.row(the_obs)) >=  
+        if (afriat_par * arma::dot(mat_p.row(the_obs), mat_x.row(the_obs)) >=  
             arma::dot(mat_p.row(the_obs), mat_x.row(the_winner))) {
-          if (arma::dot(mat_p.row(the_winner), mat_x.row(the_winner)) >  
+          if (afriat_par * arma::dot(mat_p.row(the_winner), mat_x.row(the_winner)) >  
                 arma::dot(mat_p.row(the_winner), mat_x.row(the_obs))) {
             n_incompatible++;
           }
-        } else if (arma::dot(mat_p.row(the_obs), mat_x.row(the_obs)) >
+        } else if (afriat_par * arma::dot(mat_p.row(the_obs), mat_x.row(the_obs)) >
             arma::dot(mat_p.row(the_obs), mat_x.row(the_winner))) {
-          if (arma::dot(mat_p.row(the_winner), mat_x.row(the_winner)) >=
+          if (afriat_par * arma::dot(mat_p.row(the_winner), mat_x.row(the_winner)) >=
                 arma::dot(mat_p.row(the_winner), mat_x.row(the_obs))) {
             n_incompatible++;
           }
@@ -86,11 +109,12 @@ RcppExport SEXP CpLow(SEXP x, SEXP p, SEXP samples) { try {
 ////////////////////////////////////////////////////////////////////////////////
 // Crawford-Pendakur upper bound classic algorithm 
 // (complete Floyd-Warshall GARP check at each stage)
-RcppExport SEXP CpUp(SEXP px, SEXP samples) { try {
+RcppExport SEXP CpUp(SEXP px, SEXP samples, SEXP afriat) { try {
   // import prices*quantities matrix (px)
   NumericMatrix r_px(px);
   unsigned n_obs= r_px.nrow();
   arma::mat mat_px(r_px.begin(), n_obs, n_obs);
+  double afriat_par= as<double>(afriat);
   
   // import samples matrix
   NumericMatrix r_samp(samples);
@@ -134,7 +158,7 @@ RcppExport SEXP CpUp(SEXP px, SEXP samples) { try {
         current_indices(current_indices.n_rows-1)= i_obs;
         
         current_matrix= mat_px(current_indices, current_indices);
-        if(!ViolateGarp(current_matrix)) { // no GARP violation
+        if(!ViolateGarp(current_matrix, afriat_par)) { // no GARP violation
           clustering(i_obs)= i_clust + 1;
           clusterpop(i_clust)= clusterpop(i_clust) + 1;
           b_found= true;
@@ -172,11 +196,12 @@ RcppExport SEXP CpUp(SEXP px, SEXP samples) { try {
 ////////////////////////////////////////////////////////////////////////////////
 // Fast Floyd Crawford-Pendakur upper bound: 
 // one step of Floyd algorithm for each (obs, cluster) couple
-RcppExport SEXP FastUp(SEXP px, SEXP samples) { try {
+RcppExport SEXP FastUp(SEXP px, SEXP samples, SEXP afriat) { try {
   // import prices*quantities matrix (px)
   NumericMatrix r_px(px);
   unsigned n_obs= r_px.nrow();
   arma::mat mat_px(r_px.begin(), n_obs, n_obs);
+  double afriat_par= as<double>(afriat);
   
   // import samples matrix
   NumericMatrix r_samp(samples);
@@ -187,9 +212,9 @@ RcppExport SEXP FastUp(SEXP px, SEXP samples) { try {
   arma::umat direct= arma::zeros<arma::umat>(n_obs, n_obs);
   for (unsigned i_row= 0; i_row < n_obs; i_row++) {
     for (unsigned i_col= 0; i_col < n_obs; i_col++) {
-      if (mat_px(i_row, i_row) == mat_px(i_row, i_col)) {
+      if (afriat_par * mat_px(i_row, i_row) == mat_px(i_row, i_col)) {
         direct(i_row, i_col)= 1;
-      } else if (mat_px(i_row, i_row) > mat_px(i_row, i_col)) {
+      } else if (afriat_par * mat_px(i_row, i_row) > mat_px(i_row, i_col)) {
         direct(i_row, i_col)= 2;
       }
     }
@@ -360,12 +385,13 @@ RcppExport SEXP FastUp(SEXP px, SEXP samples) { try {
 ////////////////////////////////////////////////////////////////////////////////
 // Depth-first Crawford-Pendakur upper bound
 // One run of depth-first search for each (obs, cluster) couple
-RcppExport SEXP DeepCpUp(SEXP x, SEXP p, SEXP samples) { try {
+RcppExport SEXP DeepCpUp(SEXP x, SEXP p, SEXP samples, SEXP afriat) { try {
   // import quantities and prices matrices (x, p)
   NumericMatrix r_x(x), r_p(p);
   unsigned n_obs= r_x.nrow();
   arma::mat mat_x(r_x.begin(), r_x.nrow(), r_x.ncol());
   arma::mat mat_p(r_p.begin(), r_p.nrow(), r_p.ncol());
+  double afriat_par= as<double>(afriat);
   
   // import samples matrix
   NumericMatrix r_samp(samples);
@@ -381,6 +407,8 @@ RcppExport SEXP DeepCpUp(SEXP x, SEXP p, SEXP samples) { try {
   NumericVector hist_n_clust(r_samp.ncol());
 
   std::vector<bool> tabu(n_obs);
+  std::vector<unsigned> hist_tabu; // history of tabu obs (not reported)
+  hist_tabu.reserve(n_obs);
   std::vector<unsigned> rec_garp;
   arma::mat tmp_x, tmp_p;
   unsigned n_tabu;
@@ -419,13 +447,14 @@ RcppExport SEXP DeepCpUp(SEXP x, SEXP p, SEXP samples) { try {
         // check for GARP violation
         for (unsigned i_tabu=  0; i_tabu < tabu.size(); i_tabu++)
           tabu[i_tabu]= false; // clear tabu list
+        hist_tabu.clear();
         n_tabu= 0;
         tmp_x= (arma::mat) mat_x.rows(crt_indices);
         tmp_p= (arma::mat) mat_p.rows(crt_indices);
-        rec_garp= RecGarp(the_k, &tabu, &n_tabu,
-                          std::vector<unsigned>(0), 
+        rec_garp= RecGarp(the_k, &tabu, &n_tabu, &hist_tabu,
+                          std::vector<unsigned>(0),
                           std::vector<bool>(0),
-                          &tmp_x, &tmp_p);
+                          &tmp_x, &tmp_p, afriat_par);
                           
         // If no GARP violation, add to current cluster
         if (rec_garp.size() == 0) { // No GARP violation

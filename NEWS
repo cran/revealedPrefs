@@ -1,0 +1,5 @@
+** New in v0.2
+*  Added functions simPrefs, simWarp, simSarp, simGarp for data simulation.
+*  Added the Afriat parameter to all functions, to allow some level of decision error.
+*  Fixed a bug in deepSarp algorithm, which could be fooled by a nonstrict preference loop.
+
