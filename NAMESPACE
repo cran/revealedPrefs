@@ -12,7 +12,7 @@ export(simGarp)
 export(simSarp)
 export(simWarp)
 
-useDynLib(revealedPrefs)
+useDynLib(revealedPrefs, .registration= TRUE, .fixes= "C_")
 
 S3method(print, axiomTest)
 S3method(summary, axiomTest)

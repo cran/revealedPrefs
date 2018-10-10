@@ -122,7 +122,7 @@ RcppExport SEXP CheckSarp(SEXP x, SEXP p, SEXP afriat) { try {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// SARP - recursive function for depth-first search with tabu list
+// SARP - recursive function for depth-first search
 // returns empty vector if no violation found
 // returns vector of violating path if violation found
 // (used by DeepSarp)
@@ -144,12 +144,12 @@ std::vector<unsigned> RecSarp(unsigned cur_obs, std::vector<bool> * tabu,
           }
         }
         if (b_asc) {
-          // if i_search is in ascendence, check for any k_asc != cur_obs
+          // if i_search is in ascendence, check for any x(k_asc) != x(cur_obs)
           bool b_all_equal= true;
           for (unsigned k_asc= i_asc; k_asc < ascendence.size(); k_asc++) {
             // try all ascendents k_asc since i_asc
             if (arma::accu(arma::abs(x[0].row(cur_obs) - 
-                                      x[0].row(k_asc))) != 0) {
+                                      x[0].row(ascendence[k_asc]))) != 0) {
               b_all_equal= false;
               break;
             }
@@ -182,7 +182,7 @@ std::vector<unsigned> RecSarp(unsigned cur_obs, std::vector<bool> * tabu,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Check SARP using depth-first search with tabu list
+// Check SARP using depth-first search
 RcppExport SEXP DeepSarp(SEXP quanti, SEXP prices, SEXP afriat) { try {
   // import arguments
   NumericMatrix r_quanti(quanti), r_prices(prices);

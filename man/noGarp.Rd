@@ -28,9 +28,9 @@ Data in \code{noWarp} violate WARP and SARP, but not GARP.
 
 Data in \code{noGarp} violate GARP and SARP, but not WARP.
 
-Data in \code{noSarp} violate WARP and SARP, but not GARP.
+Data in \code{noSarp} violate SARP, but not WARP or GARP.
 
-Data in \code{okSarp} is consistent with WARP, SARP and GARP.
+Data in \code{okSarp} are consistent with WARP, SARP and GARP.
 }
 \examples{
 data(noWarp)

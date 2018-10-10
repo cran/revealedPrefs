@@ -39,7 +39,6 @@ optCost <- function(x, objective.mat, afriat.par) {
 simPrefs <- function(pref.mat, ngoods, afriat.par= 1, 
                      qmin= 0, qmax= 1, pmin= 0, pmax= 1,
                      maxit= 100, verbose= FALSE) {
-  library(pso)
   if (length(afriat.par) > 1 | afriat.par > 1 | afriat.par < 0)
     stop("'afriat.par' must be a real value between 0 and 1.\n")
   res <- pso::psoptim(par = rep(NA, 2 * nrow(pref.mat) * ngoods), 
@@ -64,7 +63,7 @@ simGarp <- function(nobs, ngoods, afriat.par= 1, maxit= 10 * nobs,
   
   res <- .Call("SimAxiom", nobs, ngoods, afriat.par, maxit, 
                pmin, pmax, qmin, qmax, "GARP", PACKAGE= "revealedPrefs")
-  if (res$nobs < nobs & res$iter == maxit)
+  if (res$nobs < nobs && res$iter == maxit)
     warning("Max iterations reached before completing requested size.")
   res
 }
@@ -78,7 +77,7 @@ simSarp <- function(nobs, ngoods, afriat.par= 1, maxit= 10 * nobs,
   
   res <- .Call("SimAxiom", nobs, ngoods, afriat.par, maxit, 
                pmin, pmax, qmin, qmax, "SARP", PACKAGE= "revealedPrefs")
-  if (res$nobs < nobs & res$iter == maxit)
+  if (res$nobs < nobs && res$iter == maxit)
     warning("Max iterations reached before completing requested size.")
   res
 }
@@ -92,7 +91,7 @@ simWarp <- function(nobs, ngoods, afriat.par= 1, maxit= 10 * nobs,
   
   res <- .Call("SimAxiom", nobs, ngoods, afriat.par, maxit, 
                pmin, pmax, qmin, qmax, "WARP", PACKAGE= "revealedPrefs")
-  if (res$nobs < nobs & res$iter == maxit)
+  if (res$nobs < nobs && res$iter == maxit)
     warning("Max iterations reached before completing requested size.")
   res
 }

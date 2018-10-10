@@ -1,22 +1,14 @@
-\name{revealedPrefs}
+\name{revealedPrefs-package}
+\alias{revealedPrefs-package}
 \alias{revealedPrefs}
-
 \docType{package}
 \title{
-Revealed preferences and microeconomic rationality
+\packageTitle{revealedPrefs}
 }
 \description{
-Computation of (direct and indirect) revealed preferences, fast non-parametric tests of rationality axioms (WARP, SARP, GARP), simulation of axiom-consistent data, and detection of GARP-consistent subpopulations.
+\packageDescription{revealedPrefs}
 }
 \details{
-\tabular{ll}{
-Package: \tab revealedPrefs\cr
-Type: \tab Package\cr
-Version: \tab 0.1\cr
-Date: \tab 2014-06-14\cr
-License: \tab GPL (>=2)\cr
-}
-
 This package is meant for the analysis of (quantity, price) data, eg. of bundles of goods and corresponding prices. It features fast algorithms that make the analysis of large datasets feasible.
 
 Functions \code{directPrefs} and \code{indirectPrefs} compute revealed preferences.
@@ -27,7 +19,10 @@ Functions \code{simWarp}, \code{simSarp}, \code{simGarp} and \code{simPrefs} gen
 
 Functions \code{cpLower} and \code{cpUpper} generate Crawford-Pendakur type bounds on the number of subpopulations and provide the corresponding clusterings.
 }
-\author{Julien Boelaert \email{jubo.stats@gmail.com}
+\author{
+\packageAuthor{revealedPrefs}
+
+Maintainer: \packageMaintainer{revealedPrefs}
 }
 \references{
 Varian, H. R. (1982) The Nonparametric Approach to Demand Analysis, 

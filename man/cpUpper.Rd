@@ -10,7 +10,7 @@ Upper bound on the number of GARP-consistent subpopulations and clustering.
 The \code{cpUpper} function computes a Crawford-Pendakur type upper bound on the number of GARP-consistent subpopulations, and performs clustering of the data.
 }
 \usage{
-cpUpper(x, p, times= 1, afriat.par= 1, method= c("fastfloyd", "deep", "floyd"))
+cpUpper(x, p, times= 1, afriat.par= 1, method= c("fastfloyd", "floyd"))
 \method{print}{upperBound}(x, ...)
 \method{summary}{upperBound}(object, ...)
 }
@@ -19,7 +19,7 @@ cpUpper(x, p, times= 1, afriat.par= 1, method= c("fastfloyd", "deep", "floyd"))
   \item{p}{data frame or matrix (of same dimensions as x) containing the corresponding prices,}
   \item{times}{number of times the algorithm is run (the final result is the best of \code{times} results, ie. lowest number of clusters found), default is 1,}
   \item{afriat.par}{the Afriat parameter, a real number in [0,1], which allows a certain level of error in the optimization of choices ; default is 1, ie. no optimization error allowed,}
-  \item{method}{character string: \code{"fastfloyd"} or \code{"deep"} or \code{"floyd"} (see Details). Default \code{"fastfloyd"}. }
+  \item{method}{character string: \code{"fastfloyd"} or \code{"floyd"} (see Details). Default \code{"fastfloyd"}. }
   \item{object}{an object of class \code{upperBound} as returned by \code{cpUpper},}
   \item{...}{additional arguments passed to the \code{print} and 
   \code{summary} methods (unused).}
@@ -38,9 +38,7 @@ For each run of the algorithm, a random permutation of the observations is drawn
 Three methods are available: 
 \code{"fastfloyd"}{ (default) uses an iterative variant of the Floyd-Warshall algorithm, in which the check of consistency of the current observation with a given cluster is done in a single step of the Floyd-Warshall algorithm. Much faster than \code{"floyd"}.}
 
-\code{"deep"}{ uses a single run of recursive depth-first search with tabu list for each check of an observation against a given cluster. Faster than \code{"fastfloyd"} on large datasets (eg. > 5000 observations).}
-
-\code{"floyd"}{ uses the algorithm described in Crawford and Pendakur (2013): at each step the complete Floyd-Warshall algorithm is run to check whether each cluster can accomodate the current observation. Much slower than the two other algorithms.}
+\code{"floyd"}{ uses the algorithm described in Crawford and Pendakur (2013): at each step the complete Floyd-Warshall algorithm is run to check whether each cluster can accomodate the current observation.}
 }
 \note{
 Warning: \code{cpUpper} can be very slow for large datasets (eg. more than 1000 observations).

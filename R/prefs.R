@@ -25,9 +25,9 @@
 ## prefs[i, j]= 1 iff equality with prices i (afriat.par * p_i q_i == p_i q_j)
 ## prefs[i, j]= 2 iff i strictly prefered to j (afriat.par * p_i q_i > p_i q_j)
 directPrefs <- function(x, p, afriat.par= 1) {
-  if (any(is.na(x)) | any(is.na(p))) stop("NAs found in x or p\n")
+  if (any(is.na(x)) || any(is.na(p))) stop("NAs found in x or p\n")
   if (!all(dim(x) == dim(p))) stop("x and p must have same dimension\n")
-  if (length(afriat.par) > 1 | afriat.par > 1 | afriat.par < 0)
+  if (length(afriat.par) > 1 || afriat.par > 1 || afriat.par < 0)
     stop("'afriat.par' must be a real value between 0 and 1.\n")
   x <- as.matrix(x)
   p <- as.matrix(p)
@@ -45,9 +45,9 @@ directPrefs <- function(x, p, afriat.par= 1) {
 ## prefs[i, j]= 2 iff i indirectly strictly prefered to j 
 ##                    (with at least one strict preference)
 indirectPrefs <- function(x, p, afriat.par= 1) {
-  if (any(is.na(x)) | any(is.na(p))) stop("NAs found in x or p\n")
+  if (any(is.na(x)) || any(is.na(p))) stop("NAs found in x or p\n")
   if (!all(dim(x) == dim(p))) stop("x and p must have same dimension\n")
-  if (length(afriat.par) > 1 | afriat.par > 1 | afriat.par < 0)
+  if (length(afriat.par) > 1 || afriat.par > 1 || afriat.par < 0)
     stop("'afriat.par' must be a real value between 0 and 1.\n")
   x <- as.matrix(x)
   p <- as.matrix(p)

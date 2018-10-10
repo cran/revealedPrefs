@@ -22,11 +22,11 @@
 ## Function for Crawford-Pendakur-type Upper Bound algorithms
 ## for quantities x and prices p
 cpUpper <- function(x, p, times= 1, afriat.par= 1, 
-                    method= c("fastfloyd", "deep", "floyd")) {
+                    method= c("fastfloyd", "floyd")) {
   method <- match.arg(method)
-  if (any(is.na(x)) | any(is.na(p))) stop("NAs found in x or p\n")
+  if (any(is.na(x)) || any(is.na(p))) stop("NAs found in x or p\n")
   if (!all(dim(x) == dim(p))) stop("x and p must have same dimension\n")
-  if (length(afriat.par) > 1 | afriat.par > 1 | afriat.par < 0)
+  if (length(afriat.par) > 1 || afriat.par > 1 || afriat.par < 0)
     stop("'afriat.par' must be a real value between 0 and 1.\n")
   x <- as.matrix(x)
   p <- as.matrix(p)
@@ -39,9 +39,7 @@ cpUpper <- function(x, p, times= 1, afriat.par= 1,
   } else if (method == "fastfloyd") {
     the.call <- .Call("FastUp", p%*%t(x), the.samples, afriat.par,
                       PACKAGE = "revealedPrefs")
-  } else 
-    the.call <- .Call("DeepCpUp", x, p, the.samples, afriat.par,
-                      PACKAGE = "revealedPrefs")
+  }
   
   the.call$clustering <- as.numeric(the.call$clustering)
   the.call$cluster.pop <- 
@@ -55,9 +53,9 @@ cpUpper <- function(x, p, times= 1, afriat.par= 1,
 ## Function for Crawford-Pendakur-type Lower Bound algorithms
 ## for quantities x and prices p
 cpLower <- function(x, p, times= 1, afriat.par= 1) {
-  if (any(is.na(x)) | any(is.na(p))) stop("NAs found in x or p\n")
+  if (any(is.na(x)) || any(is.na(p))) stop("NAs found in x or p\n")
   if (!all(dim(x) == dim(p))) stop("x and p must have same dimension\n")
-  if (length(afriat.par) > 1 | afriat.par > 1 | afriat.par < 0)
+  if (length(afriat.par) > 1 || afriat.par > 1 || afriat.par < 0)
     stop("'afriat.par' must be a real value between 0 and 1.\n")
   x <- as.matrix(x)
   p <- as.matrix(p)

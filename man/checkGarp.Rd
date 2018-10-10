@@ -16,15 +16,15 @@ Functions \code{checkWarp}, \code{checkSarp} and \code{checkGarp} perform exact 
 \usage{
 checkWarp(x, p, afriat.par= 1)
 checkSarp(x, p, afriat.par= 1, method= c("deep", "floyd"))
-checkGarp(x, p, afriat.par= 1, method= c("deep", "floyd"))
+checkGarp(x, p, afriat.par= 1, method= c("floyd"))
 \method{print}{axiomTest}(x, ...)
 \method{summary}{axiomTest}(object, ...)
 }
 \arguments{
   \item{x}{data frame or matrix containing the observed quantities, where each row corresponds to an observation and the columns are types of goods, or an object of class \code{axiomTest} for use with \code{print},}
-  \item{p}{data frame or matrix (of same dimensions as x) containing the   corresponding prices,}
+  \item{p}{data frame or matrix (of same dimensions as x) containing the corresponding prices,}
   \item{afriat.par}{the Afriat parameter, real number in [0,1], which allows a certain level of error in the optimization of choices; default is 1, ie. no optimization error allowed,}
-  \item{method}{character string: \code{"deep"} for depth-first search with tabu list (default, very fast), \code{"floyd"} for Floyd-Warshall algorithm (can be very slow for large datasets when no violations are present),}
+  \item{method}{character string: \code{"deep"} for depth-first search (default for Sarp), \code{"floyd"} for Floyd-Warshall algorithm (can be very slow for large datasets when no violations are present),}
   \item{object}{an object of class \code{axiomTest} as returned by eg. \code{checkWarp},}
   \item{...}{additional arguments passed to the \code{print} and \code{summary} methods (unused).}
 }
@@ -33,7 +33,7 @@ Functions \code{checkWarp}, \code{checkSarp} and \code{checkGarp} return an obje
   \item{\code{violation}}{logical value, \code{TRUE} if a violation was found,}
   \item{\code{path}}{last path taken during depth-first search,}
   \item{\code{path.strict}}{(for \code{deep} method) vector of logical values indicating the strictness of direct preference relations in the last path taken,}
-  \item{\code{violators}}{(for \code{deep} method) vector of indices of axiom-violating observations,}
+  \item{\code{violators}}{vector of indices of axiom-violating observations (only the first violators that were found are reported, this is not a complete list),}
   \item{\code{strict}}{vector of logical values indicating whether the preferences between reported violators (or path) are strict or not,}
   \item{\code{direct.violation}}{logical value, \code{TRUE} if a violation was found in direct preferences,}
   \item{\code{type}}{the violated or non-violated rationality axiom,} 
@@ -51,7 +51,7 @@ GARP: if X (in)directly prefered to Y, then Y cannot be strictly directly prefer
 
 If WARP or GARP are violated, then SARP is also violated.
   
-Testing of WARP is straightforward by pairwise comparison of revealed preferences. GARP and SARP can be tested either using the Floyd-Warshall algorithm to find the transitive closure of the direct preference relationship,or using a depth-first search with tabu list that systematically explores the preference relationship in search of a violating cycle.
+Testing of WARP is straightforward by pairwise comparison of revealed preferences. GARP is tested using the Floyd-Warshall algorithm to find the transitive closure of the direct preference relationship. SARP can be tested either using the Floyd-Warshall algorithm, or using a depth-first search that systematically explores the preference relationship in search of a violating cycle.
 }
 \references{
 Varian, H. R. (1982) The Nonparametric Approach to Demand Analysis, 

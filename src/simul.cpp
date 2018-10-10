@@ -30,16 +30,6 @@ using namespace Rcpp;
 ////////////////////////////////////////////////////////////////////////////////
 // Auxiliary functions
 
-// Recursive depth-first GARP 
-// (used by SimAxiom, defined in garp.cpp)
-std::vector<unsigned> RecGarp(unsigned cur_obs, std::vector<bool> *tabu, 
-                              unsigned *n_tabu, 
-                              std::vector<unsigned> *hist_tabu,
-                              std::vector<unsigned> ascendence, 
-                              std::vector<bool> strict_asc, 
-                              arma::mat *x, arma::mat *p, 
-                              double afriat_par);
-                              
 // Recursive depth-first SARP 
 // (used by SimAxiom, defined in sarp.cpp)
 std::vector<unsigned> RecSarp(unsigned cur_obs, std::vector<bool> * tabu, 
@@ -48,9 +38,79 @@ std::vector<unsigned> RecSarp(unsigned cur_obs, std::vector<bool> * tabu,
                               arma::mat *x, arma::mat *p, 
                               double afriat_par);
 
+// Check revealed prefs (used by RecGarp, defined in garp.cpp)
+unsigned CheckRevPref(arma::mat *x, arma::mat *p, unsigned obs_i,
+                      unsigned obs_k, double afriat_par);
+
+// Recursive depth-first GARP 
+// returns empty vector if no violation found
+// returns vector of violating path if violation found
+// (used by SimAxiom)
+std::vector<unsigned> RecGarp(unsigned cur_obs, std::vector<bool> * tabu, 
+                              unsigned *n_tabu, 
+                              std::vector<unsigned> *hist_tabu,
+                              std::vector<unsigned> ascendence, 
+                              std::vector<bool> strict_asc, 
+                              arma::mat *x, arma::mat *p, 
+                              double afriat_par) {
+  for (unsigned i_search= 0; i_search < x[0].n_rows; i_search++) {
+    if (!tabu[0][i_search] && i_search!=cur_obs) {
+      unsigned rev_pref= CheckRevPref(x, p, cur_obs, i_search, afriat_par);
+      if (rev_pref) {
+        // if cur_obs prefered to i_search, check if i_search is in ascendence
+        bool b_asc= false;
+        unsigned i_asc;
+        for (i_asc= 0; i_asc < ascendence.size(); i_asc++) {
+          if (ascendence[i_asc] == i_search) {
+            b_asc= true;
+            break;
+          }
+        }
+        if (b_asc) {
+          // if i_search is in ascendence, check if there is a strict ascendence
+          // (start looking where it left off, at beginning of loop)
+          bool b_strict= false;
+          for (; i_asc < ascendence.size(); i_asc++) {
+            if (strict_asc[i_asc]) {
+              b_strict= true;
+              break;
+            }
+          } 
+          if (b_strict) { // found strict cycle, exit
+            ascendence.push_back(cur_obs);
+            ascendence.push_back(i_search);
+            return(ascendence);
+          }
+        } else {
+          // if not in ascendence, pursue depth-first search
+          std::vector<unsigned> new_asc= ascendence;
+          std::vector<bool> new_strict= strict_asc;
+          new_asc.push_back(cur_obs);
+          if (rev_pref == 2) {
+            new_strict.push_back(true);
+          } else new_strict.push_back(false);
+          
+          std::vector<unsigned> pursue= RecGarp(i_search, 
+                                                tabu, n_tabu, hist_tabu,
+                                                new_asc, new_strict, x, p, 
+                                                afriat_par);
+          if (pursue.size())
+            return pursue; // if violation in descendence, return violation
+        }
+      }
+    }
+  }
+  // once all the available choices have been tried,
+  // if no nonstrict cycle found, tabu the current obs  
+  tabu[0][cur_obs]= true;
+  (*n_tabu)++;
+  hist_tabu[0].push_back(cur_obs);
+  return std::vector<unsigned>(0);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
-// Generate simulated GARP-consistent data
+// Generate simulated axiom-consistent data
 RcppExport SEXP SimAxiom(SEXP nobs, SEXP ngoods, SEXP afriat, SEXP maxit, 
                          SEXP pmin, SEXP pmax, SEXP qmin, SEXP qmax, 
                          SEXP axiom) { try {
@@ -79,7 +139,7 @@ RcppExport SEXP SimAxiom(SEXP nobs, SEXP ngoods, SEXP afriat, SEXP maxit,
   std::vector<bool> tabu;
   std::vector<unsigned> hist_tabu; // history of tabu obs, ie. utility ordering
   std::vector<unsigned> df_search;
-  while (cur_length < n_obs & cur_it < max_it) {
+  while ((cur_length < n_obs) & (cur_it < max_it)) {
     b_violation= false;
     cur_it++;
     

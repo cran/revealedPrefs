@@ -43,7 +43,7 @@ RcppExport SEXP CheckWarp(SEXP x, SEXP p, SEXP afriat) { try {
             arma::dot(mat_p.row(i_row), mat_x.row(i_col))) {
         if (afriat_par * arma::dot(mat_p.row(i_col), mat_x.row(i_col)) >=
               arma::dot(mat_p.row(i_col), mat_x.row(i_row))) {
-          if (arma::accu(arma::abs(mat_p.row(i_col) - mat_x.row(i_row))) != 0)
+          if (arma::accu(arma::abs(mat_x.row(i_col) - mat_x.row(i_row))) != 0)
           { // if p_i x_i >= p_i x_k AND p_k x_k >= p_k x_i AND x_i != x_k
             NumericVector violators(2);
             violators(0)= i_row + 1;

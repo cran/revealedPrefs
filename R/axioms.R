@@ -23,11 +23,12 @@
 ## WARP
 
 ## Function to check WARP with exact algorithm (check all pairs)
+## (for quantities x and prices p)
 ## violation if (x_i p_i >= x_k p_i) AND (x_k p_k >= x_i p_k) AND (x_i != x_k)
 checkWarp <- function(x, p, afriat.par= 1) {
   if (!all(dim(x) == dim(p))) stop("x and p must have same dimension\n")
-  if (any(is.na(x)) | any(is.na(p))) stop("NAs found in x or p\n")
-  if (length(afriat.par) > 1 | afriat.par > 1 | afriat.par < 0)
+  if (any(is.na(x)) || any(is.na(p))) stop("NAs found in x or p\n")
+  if (length(afriat.par) > 1 || afriat.par > 1 || afriat.par < 0)
     stop("'afriat.par' must be a real value between 0 and 1.\n")
   x <- as.matrix(x)
   p <- as.matrix(p)
@@ -42,13 +43,14 @@ checkWarp <- function(x, p, afriat.par= 1) {
 ## SARP
 
 ## Function to check SARP:
-##  - depth-first search with tabu list
+##  - depth-first search
 ##  - floyd-warshall 
+## (for quantities x and prices p)
 ## SARP violated if slack preference cycle of unequal quantities
 checkSarp <- function(x, p, afriat.par= 1, method= c("deep", "floyd")) {
   method <- match.arg(method)
   if (!all(dim(x) == dim(p))) stop("x and p must have same dimension\n")
-  if (length(afriat.par) > 1 | afriat.par > 1 | afriat.par < 0)
+  if (length(afriat.par) > 1 || afriat.par > 1 || afriat.par < 0)
     stop("'afriat.par' must be a real value between 0 and 1.\n")
   x <- as.matrix(x)
   p <- as.matrix(p)
@@ -78,42 +80,24 @@ checkSarp <- function(x, p, afriat.par= 1, method= c("deep", "floyd")) {
 ################################################################################
 ## GARP
 
-## Function to check GARP with exact algorithm
-## (Warshall-Floyd or depth-first tabu)
+## Function to check GARP:
+##  - floyd-warshall 
+## (for quantities x and prices p)
 ## GARP violated if strict cycle present
-## for quantities x and prices p
-checkGarp <- function(x, p, afriat.par=1, method= c("deep", "floyd")){
+checkGarp <- function(x, p, afriat.par=1, method= c("floyd")){
   method <- match.arg(method)
-  if (any(is.na(x)) | any(is.na(p))) stop("NAs found in x or p\n")
+  if (any(is.na(x)) || any(is.na(p))) stop("NAs found in x or p\n")
   if (!all(dim(x) == dim(p))) stop("x and p must have same dimension\n")
-  if (length(afriat.par) > 1 | afriat.par > 1 | afriat.par < 0)
+  if (length(afriat.par) > 1 || afriat.par > 1 || afriat.par < 0)
     stop("'afriat.par' must be a real value between 0 and 1.\n")
   x <- as.matrix(x)
   p <- as.matrix(p)
 
   if (method == "floyd") {
-    the.call <- .Call("CheckGarp", p%*%t(x), afriat.par, 
-                      PACKAGE = "revealedPrefs")
-  } else {
-    the.call <- .Call("DeepGarp", x, p, afriat.par,
-                      PACKAGE= "revealedPrefs")
-    if (the.call$violation) {
-      the.call$path <- the.call$path + 1
-      cycle.start <- 
-        which(the.call$path == the.call$path[length(the.call$path)])[1]
-      the.call$violators <- 
-        the.call$path[cycle.start:(length(the.call$path) - 1)]
-      the.call$strict <- 
-        the.call$path.strict[cycle.start:length(the.call$path.strict)]
-      
-      if (length(the.call$violators) == 2) {
-        the.call$direct.violation <- TRUE
-      } else the.call$direct.violation <- FALSE
-    } else {
-      # if no violation
-      the.call$pref.order <- the.call$pref.order + 1
-    }
+    the.call <- .Call("CheckGarp", p %*% t(x), 
+                      afriat.par, PACKAGE = "revealedPrefs")
   }
+  
   the.call$type <- "GARP"
   the.call$method <- method
   the.call$afriat.par <- afriat.par
@@ -140,7 +124,7 @@ summary.axiomTest <- function(object, ...) {
     cat(" Pairwise comparisons.\n")
   } else {
     if (object$method == "floyd") cat(" Floyd-Warshall algorithm.\n")
-    if (object$method == "deep") cat(" Depth-first search with tabu list.\n")
+    if (object$method == "deep") cat(" Depth-first search.\n")
   }
   
   cat("  Afriat parameter:", object$afriat.par,
@@ -169,7 +153,7 @@ summary.axiomTest <- function(object, ...) {
       cat("  Violating observations:", 
           paste(object$violators, ">=", collapse= " "), 
           object$violators[1], "\n")
-      if (object$direct.violation | object$method == "deep") {
+      if (object$direct.violation || object$method == "deep") {
         cat("                        : (direct preferences)\n")
       } else cat("                        : (indirect preferences)\n")
       cat("                        : And not all quantities in cycle equal.\n")
@@ -195,7 +179,7 @@ summary.axiomTest <- function(object, ...) {
       cat("  Violating observations:", 
           paste(object$violators, signs, collapse= " "), 
           object$violators[1], "\n")
-      if (object$method == "deep" | object$direct.violation) {
+      if (object$method == "deep" || object$direct.violation) {
         cat("                        : (direct preferences)\n")
       } else cat("                        : (indirect preferences)\n")
       
