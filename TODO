@@ -1,9 +1,0 @@
-* money pump
-* implement depth-first Warp test? (to get preference order)
-* lowmem version for Floyd-Warshal?
-* option to see all warp, garp, sarp violations?
-* use std::vector in more functions (upper bound CP)
-* iterative version of depth-first Sarp test
-
-* Kuan-Pin Lin, Stan Perry, Computer Science in Economics and Management, 1988, Volume 1, Issue 2, pp 97-111, A logic programming approach to revealed preference theory
-

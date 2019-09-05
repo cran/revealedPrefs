@@ -1,12 +1,11 @@
-8d6c6d89bd0f5050b2db110f59a1c5c9 *DESCRIPTION
+b71d8d8b774d125e10309a9153b27fba *DESCRIPTION
 7109bd4c368409f335ba653fdfef62cd *NAMESPACE
 f24c8f805fe95b24fe21fba130082b4a *NEWS
 2d4f133e2f7ada17c2cff94f836c7884 *R/axioms.R
 c33336dfa1ff21ea03bd2fcf117da9ec *R/crawford-pendakur.R
 01e98e03eb6854e0a5d8b66c76e62fc1 *R/prefs.R
 a9f2b501e95f1e87d1f85b3c60dd35a7 *R/simulPref.R
-dd81f2eed5be6221cec3476aeeaec895 *TODO
-67084c0519e233387a3365d812dd4574 *build/partial.rdb
+27b328c20507fe15d70f86c581751848 *build/partial.rdb
 de26544f3a531646ea5ad46a03f94687 *data/noAxiom.rda
 1d7d3a85b85317cf03990b96adf0dd3a *data/noGarp.rda
 b88301b46a552d207132da75b5cd7233 *data/noSarp.rda
@@ -22,7 +21,7 @@ c6052a017eb46a38f235ffdc1dfed08b *man/simGarp.Rd
 34c8bcfc57d0f658ab7b5aacccc6dee1 *man/simPrefs.Rd
 489b262d4f81136a32f0bb09936fe53e *src/Makevars
 a73031cbe7d6aaf0bd22e20f6526977d *src/Makevars.win
-1253037856c2417dd5e885dee3491b51 *src/crawford-pendakur.cpp
+6e818bd8d882af044c82cfb6ef6b92e4 *src/crawford-pendakur.cpp
 c73d0ef2e3a66ffeda964efadb12fa8d *src/garp.cpp
 4f8ba5bca8d18a8341614c669404167e *src/init.cpp
 6f061c99be9ac2ef900f39cf0037f435 *src/prefs.cpp

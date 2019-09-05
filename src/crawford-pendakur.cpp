@@ -137,7 +137,7 @@ RcppExport SEXP CpUp(SEXP px, SEXP samples, SEXP afriat) { try {
       unsigned i_obs= mat_samp(ind_samp, i_try); // index of current observation
       
       tmp_clusterpop= clusterpop.rows(0, n_clust - 1);
-      cluster_order= arma::stable_sort_index(tmp_clusterpop, 1); // descend
+      cluster_order= arma::stable_sort_index(tmp_clusterpop, "descend"); // descend
       for (unsigned index_clust= 0; index_clust < n_clust; index_clust++) {
         // take the "index_clust"th biggest cluster
         unsigned i_clust= (unsigned)cluster_order(index_clust); 
@@ -247,7 +247,7 @@ RcppExport SEXP FastUp(SEXP px, SEXP samples, SEXP afriat) { try {
       unsigned i_obs= mat_samp(ind_samp, i_try); // index of current observation
       
       tmp_clusterpop= clusterpop.rows(0, n_clust - 1);
-      cluster_order= arma::stable_sort_index(tmp_clusterpop, 1); // descending
+      cluster_order= arma::stable_sort_index(tmp_clusterpop, "descend"); // descending
       for (unsigned index_clust= 0; index_clust < n_clust; index_clust++) {
         // take the "index_clust"th biggest cluster
         unsigned i_clust= (unsigned)cluster_order(index_clust); 
